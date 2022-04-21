@@ -1,6 +1,7 @@
 import 'package:amaris_test/controllers/seriesController.dart';
 import 'package:amaris_test/pages/home/widgets/favoriteTab.dart';
 import 'package:amaris_test/pages/home/widgets/homeTab.dart';
+import 'package:amaris_test/pages/login/LoginPage.dart';
 import 'package:amaris_test/services/seriesService.dart';
 import 'package:amaris_test/utils/const.dart';
 import 'package:flutter/material.dart';
@@ -50,7 +51,14 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         centerTitle: true,
         actions: [
-          IconButton(onPressed: () => {}, icon: const Icon(Icons.settings))
+          IconButton(
+              onPressed: () => Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LoginPage(),
+                  ),
+                  (route) => false),
+              icon: const Icon(Icons.settings))
         ],
         backgroundColor: amarisBlack,
       ),
