@@ -1,6 +1,13 @@
+import 'package:amaris_test/controllers/seriesController.dart';
+import 'package:amaris_test/controllers/userController.dart';
+import 'package:amaris_test/pages/home/HomePage.dart';
+import 'package:amaris_test/services/seriesService.dart';
+import 'package:amaris_test/utils/Alerts.dart';
 import 'package:amaris_test/utils/const.dart';
 import 'package:amaris_test/widgets/AmarisButton.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -12,9 +19,11 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   late TextEditingController _nameController;
   late TextEditingController _passwordController;
+  final _formKey = GlobalKey<FormState>();
   @override
   void initState() {
     super.initState();
+    Future.microtask(() => context.read<UserController>().loadUsers());
     _nameController = TextEditingController();
     _passwordController = TextEditingController();
   }
@@ -28,6 +37,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    var userReader = context.read<UserController>();
     return Material(
       child: Container(
         width: MediaQuery.of(context).size.width,
@@ -51,49 +61,58 @@ class _LoginPageState extends State<LoginPage> {
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      TextField(
-                        style: TextStyle(color: amarisWhite),
-                        controller: _nameController,
-                        decoration: InputDecoration(
-                          hintText: 'Name',
-                          hintStyle: TextStyle(color: amarisWhite),
-                          fillColor: Colors.white,
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: amarisWhite),
-                          ),
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: amarisWhite),
-                          ),
-                        ),
-                      ),
-                      TextField(
-                        style: TextStyle(color: amarisWhite),
-                        controller: _passwordController,
-                        decoration: InputDecoration(
-                          hintText: 'Password',
-                          hintStyle: TextStyle(color: amarisWhite),
-                          fillColor: Colors.white,
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: amarisWhite),
-                          ),
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: amarisWhite),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        TextFormField(
+                          style: TextStyle(color: amarisWhite),
+                          controller: _nameController,
+                          decoration: InputDecoration(
+                            hintText: 'Name',
+                            hintStyle: TextStyle(color: amarisWhite),
+                            fillColor: Colors.white,
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: amarisWhite),
+                            ),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: amarisWhite),
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.4,
-                        child: AmarisButton(
-                            backgroundColor: amarisWhite,
-                            fontColor: amarisBlack,
-                            text: 'Log in',
-                            function: () => {},
-                            disabled: false),
-                      )
-                    ],
+                        TextFormField(
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter some text';
+                            }
+                            return null;
+                          },
+                          style: TextStyle(color: amarisWhite),
+                          controller: _passwordController,
+                          decoration: InputDecoration(
+                            hintText: 'Password',
+                            hintStyle: TextStyle(color: amarisWhite),
+                            fillColor: Colors.white,
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: amarisWhite),
+                            ),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: amarisWhite),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.4,
+                          child: AmarisButton(
+                              backgroundColor: amarisWhite,
+                              fontColor: amarisBlack,
+                              text: 'Log in',
+                              function: () => login(userReader),
+                              disabled: false),
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -111,5 +130,22 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  login(UserController userController) {
+    if (_formKey.currentState!.validate()) {
+      Alerts.loading(context);
+      if (userController.validate(
+          name: _nameController.text, passowrd: _passwordController.text)) {
+        Navigator.pop(context);
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+            (route) => false);
+      } else {
+        Navigator.pop(context);
+        Alerts.errorFlushbar(context, 'Error', 'Email o contraseña incorrecta');
+      }
+    }
   }
 }

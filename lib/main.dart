@@ -1,8 +1,16 @@
+import 'package:amaris_test/controllers/seriesController.dart';
+import 'package:amaris_test/controllers/userController.dart';
 import 'package:amaris_test/pages/welcome/welcomePage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  await dotenv.load(fileName: ".env");
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider(create: (_) => UserController()),
+    ChangeNotifierProvider(create: (_) => SeriesController())
+  ], child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
